@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Classification Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        th, td { text-align: center; }
+    </style>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Iris Classification Demo</a>
+  </div>
+</nav>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert alert-info" role="alert">
+                <strong>About the Iris Dataset:</strong> {{ iris_description }}
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title">1. Sample of the Iris Dataset</h2>
+                    <p>Below are the first 5 rows of the Iris dataset, showing the features and class label:</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    {% for name in feature_names %}
+                                        <th>{{ name }}</th>
+                                    {% endfor %}
+                                    <th>Class Label</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in data_sample %}
+                                <tr>
+                                    {% for val in row %}
+                                        <td>{{ val }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title">2. Data Splitting</h2>
+                    <ul>
+                        <li>Training set size: <b>{{ train_size }}</b> samples</li>
+                        <li>Test set size: <b>{{ test_size }}</b> samples</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title">3. KNN Predictions (First 10 Test Samples)</h2>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    {% for name in feature_names %}
+                                        <th>{{ name }}</th>
+                                    {% endfor %}
+                                    <th>True Class</th>
+                                    <th>Predicted Class (KNN)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in predictions_table %}
+                                <tr>
+                                    {% for val in row %}
+                                        <td>{{ val }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title">4. Model Accuracies</h2>
+                    <div id="accuracy-bar-chart" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title">5. Confusion Matrices</h2>
+                    <div id="confusion-matrix-charts">
+                        <!-- Plotly confusion matrices will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col">
+            <a href="/" class="btn btn-secondary">&#8592; Back to Home</a>
+        </div>
+    </div>
+</div>
+<script>
+// Accuracy Bar Chart (Plotly)
+var accData = {
+    x: {{ accuracies.keys()|list|tojson }},
+    y: {{ accuracies.values()|list|tojson }},
+    type: 'bar',
+    marker: {color: ['skyblue', 'lightgreen', 'salmon', 'gold']}
+};
+var accLayout = {
+    yaxis: {title: 'Accuracy', range: [0, 1]},
+    title: 'Model Accuracy Comparison',
+    margin: {t: 40}
+};
+Plotly.newPlot('accuracy-bar-chart', [accData], accLayout, {responsive: true});
+
+// Confusion Matrices (Plotly Heatmaps)
+const confusionMatrixData = {{ confusion_matrix_data|tojson }};
+const classNames = {{ class_names|list|tojson }};
+const colors = ['Blues', 'Greens', 'Reds', 'Oranges'];
+let i = 0;
+for (const [model, matrix] of Object.entries(confusionMatrixData)) {
+    const divId = 'cm-' + model.replace(/\s+/g, '-').toLowerCase();
+    const container = document.createElement('div');
+    container.id = divId;
+    container.style.marginBottom = '30px';
+    document.getElementById('confusion-matrix-charts').appendChild(container);
+    Plotly.newPlot(divId, [{
+        z: matrix,
+        x: classNames,
+        y: classNames,
+        type: 'heatmap',
+        colorscale: colors[i % colors.length],
+        showscale: true,
+        hoverongaps: false
+    }], {
+        title: model + ' Confusion Matrix',
+        xaxis: {title: 'Predicted Label'},
+        yaxis: {title: 'True Label'},
+        margin: {t: 40}
+    }, {responsive: true});
+    i++;
+}
+</script>
+</body>
+</html> 
