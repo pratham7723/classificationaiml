@@ -79,6 +79,8 @@ def run_classification_demo():
         "sepal length, sepal width, petal length, and petal width. "
         "The goal is to classify each sample into one of three species: Setosa, Versicolor, or Virginica."
     )
+    # Prepare full data table for filtering (features + class label for all samples)
+    full_data_table = [list(X[i]) + [class_names[y[i]]] for i in range(len(X))]
     return {
         'accuracies': accuracies,
         'confusion_matrix_files': confusion_matrix_files,
@@ -90,5 +92,6 @@ def run_classification_demo():
         'train_size': len(X_train),
         'test_size': len(X_test),
         'predictions_table': predictions_table,
-        'iris_description': iris_description
+        'iris_description': iris_description,
+        'full_data_table': full_data_table
     } 

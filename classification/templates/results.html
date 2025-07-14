@@ -121,6 +121,49 @@
             <a href="/" class="btn btn-secondary">&#8592; Back to Home</a>
         </div>
     </div>
+    <!-- Filterable Full Dataset Table -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title">6. Full Iris Dataset (Filter by Species)</h2>
+                    <div class="mb-2">
+                        <span id="entryCount" class="fw-bold">Entries: {{ full_data_table|length }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="speciesFilter" class="form-label">Filter by Species:</label>
+                        <select id="speciesFilter" class="form-select" style="max-width: 300px; display: inline-block;">
+                            <option value="All">All</option>
+                            {% for species in class_names %}
+                                <option value="{{ species }}">{{ species }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="fullDataTable" class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    {% for name in feature_names %}
+                                        <th>{{ name }}</th>
+                                    {% endfor %}
+                                    <th>Class Label</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in full_data_table %}
+                                <tr data-species="{{ row[-1] }}">
+                                    {% for val in row %}
+                                        <td>{{ val }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
 // Accuracy Bar Chart (Plotly)
@@ -164,6 +207,25 @@ for (const [model, matrix] of Object.entries(confusionMatrixData)) {
     }, {responsive: true});
     i++;
 }
+// Filter for Full Dataset Table
+document.addEventListener('DOMContentLoaded', function() {
+    var filter = document.getElementById('speciesFilter');
+    var table = document.getElementById('fullDataTable');
+    var entryCount = document.getElementById('entryCount');
+    filter.addEventListener('change', function() {
+        var selected = filter.value;
+        var count = 0;
+        for (var row of table.tBodies[0].rows) {
+            if (selected === 'All' || row.getAttribute('data-species') === selected) {
+                row.style.display = '';
+                count++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+        entryCount.textContent = 'Entries: ' + count;
+    });
+});
 </script>
 </body>
 </html> 
